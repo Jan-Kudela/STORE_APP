@@ -19,16 +19,24 @@ class CustomersView(QWidget):
         self.address = QLineEdit()
         self.address.setPlaceholderText("Adresa")
 
+        self.phone = QLineEdit()
+        self.phone.setPlaceholderText("Telefon")
+
+        self.email = QLineEdit()
+        self.email.setPlaceholderText("E-mail")
+
         btn = QPushButton("Přidat zákazníka")
         btn.clicked.connect(self.add_customer)
 
         self.table = QTableWidget()
         self.table.setColumnCount(4)
-        self.table.setHorizontalHeaderLabels(["ID","Jméno","IČO","Adresa"])
+        self.table.setHorizontalHeaderLabels(["ID","Jméno","IČO","Adresa","Telefon","E-mail"])
 
         layout.addWidget(self.name)
         layout.addWidget(self.ico)
         layout.addWidget(self.address)
+        layout.addWidget(self.phone)
+        layout.addWidget(self.email)
         layout.addWidget(btn)
         layout.addWidget(self.table)
 
@@ -47,6 +55,8 @@ class CustomersView(QWidget):
             self.table.setItem(r,1,QTableWidgetItem(c.name))
             self.table.setItem(r,2,QTableWidgetItem(str(c.ico)))
             self.table.setItem(r,3,QTableWidgetItem(str(c.address)))
+            self.table.setItem(r,4,QTableWidgetItem(str(c.phone)))
+            self.table.setItem(r,5,QTableWidgetItem(str(c.email)))
 
     def add_customer(self):
 
@@ -55,7 +65,9 @@ class CustomersView(QWidget):
         c = Customer(
             name=self.name.text(),
             ico=self.ico.text(),
-            address=self.address.text()
+            address=self.address.text(),
+            phone=self.phone.text(),
+            email=self.email.text()
         )
 
         session.add(c)

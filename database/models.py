@@ -9,6 +9,8 @@ class Customer(Base):
     name = Column(String)
     ico = Column(String)
     address = Column(String)
+    phone = Column(String)
+    email = Column(String)
 
 class Product(Base):
 

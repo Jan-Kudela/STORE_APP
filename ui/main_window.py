@@ -9,7 +9,7 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Warehouse ERP / POS")
+        self.setWindowTitle("Warehouse - DC")
 
         self.stack = QStackedWidget()
 
