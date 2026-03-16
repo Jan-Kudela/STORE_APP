@@ -8,9 +8,10 @@ class Customer(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String)
     ico = Column(String)
-    address = Column(String)
-    phone = Column(String)
+    dic = Column(String)
     email = Column(String)
+    phone = Column(String)
+    address = Column(String)
 
 class Product(Base):
 

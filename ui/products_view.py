@@ -1,8 +1,9 @@
 # ui/products_view.py
 
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QLineEdit, QPushButton,
-    QTableWidget, QTableWidgetItem, QComboBox, QLabel, QAbstractItemView
+    QWidget, QVBoxLayout, QLineEdit, QPushButton, QMessageBox,
+    QTableWidget, QTableWidgetItem, QComboBox, QLabel, QAbstractItemView,
+    QHBoxLayout
 )
 from database.db import Session
 from database.models import Product
@@ -43,10 +44,13 @@ class ProductsView(QWidget):
         self.ean.setPlaceholderText("EAN")
 
         # --- tlačítka ---
-        self.btn_save = QPushButton("Uložit produkt")
+        self.btn_new = QPushButton("Nový produkt")
+        self.btn_save = QPushButton("Uložit")
+        self.btn_edit = QPushButton("Upravit")
+        self.btn_delete = QPushButton("Smazat")
+
+        self.btn_new.clicked.connect(self.new_product)
         self.btn_save.clicked.connect(self.add_product)
-        self.btn_edit = QPushButton("Upravit produkt")
-        self.btn_delete = QPushButton("Smazat produkt")
         self.btn_edit.clicked.connect(self.edit_product)
         self.btn_delete.clicked.connect(self.delete_product)
 
@@ -76,11 +80,22 @@ class ProductsView(QWidget):
         layout.addWidget(self.vat)
         layout.addWidget(self.stock)
         layout.addWidget(self.ean)
-        layout.addWidget(self.btn_save)
+        #layout.addWidget(self.btn_save)
         layout.addWidget(self.table)
-        layout.addWidget(self.btn_save)
-        layout.addWidget(self.btn_edit)
-        layout.addWidget(self.btn_delete)
+        #layout.addWidget(self.btn_save)
+        #layout.addWidget(self.btn_edit)
+        #layout.addWidget(self.btn_delete)
+
+        button_layout = QHBoxLayout()
+
+        button_layout.addWidget(self.btn_new)
+        button_layout.addWidget(self.btn_save)
+        button_layout.addWidget(self.btn_edit)
+        button_layout.addWidget(self.btn_delete)
+
+        button_layout.addStretch()
+
+        layout.addLayout(button_layout)
 
         self.setLayout(layout)
         self.load_products()
@@ -99,6 +114,23 @@ class ProductsView(QWidget):
 
         return int(id_item.text())
     
+
+    def new_product(self):
+
+        self.name.clear()
+        self.purchase.clear()
+        self.sale_vat.clear()
+        self.stock.clear()
+        self.ean.clear()
+
+        self.vat.setCurrentText("21")
+
+        self.purchase.setReadOnly(False)
+        self.stock.setReadOnly(False)
+
+        if hasattr(self, "editing_product_id"):
+            del self.editing_product_id
+
 
     def edit_product(self):
 
@@ -119,6 +151,9 @@ class ProductsView(QWidget):
         self.stock.setText(str(product.stock))
         self.ean.setText(product.ean)
         self.vat.setCurrentText(str(product.vat))
+        
+        self.purchase.setReadOnly(True)
+        self.stock.setReadOnly(True)
 
         # uložíme ID pro update
         self.editing_product_id = product_id
@@ -165,14 +200,18 @@ class ProductsView(QWidget):
     # --- načtení produktů z DB s filtrem ---
     def load_products(self):
         session = Session()
-        filter_text = self.filter_input.text().lower()
+        filter_text = self.filter_input.text().strip()
+
         query = session.query(Product)
+
         if filter_text:
+
             query = query.filter(
                 (Product.name.ilike(f"%{filter_text}%")) |
                 (Product.ean.ilike(f"%{filter_text}%"))
             )
-        products = query.all()
+
+        products = query.order_by(Product.name).all()
 
         self.table.setRowCount(len(products))
         for r,p in enumerate(products):
@@ -185,6 +224,10 @@ class ProductsView(QWidget):
             self.table.setItem(r,6,QTableWidgetItem(str(p.margin_kc)))
             self.table.setItem(r,7,QTableWidgetItem(str(p.margin_percent) + " %"))
             self.table.setItem(r,8,QTableWidgetItem(str(p.stock)))
+
+        if self.table.rowCount() > 0:
+            self.table.selectRow(0)
+
 
     # --- uložit produkt ---
     def add_product(self):
@@ -234,6 +277,17 @@ class ProductsView(QWidget):
 
         self.load_products()
 
+        self.purchase.setReadOnly(False)
+        self.stock.setReadOnly(False)
+
+        self.name.clear()
+        self.purchase.clear()
+        self.sale_vat.clear()
+        self.stock.clear()
+        self.ean.clear()
+        self.vat.setCurrentText("21")
+
+
     
     def delete_product(self):
 
@@ -243,11 +297,21 @@ class ProductsView(QWidget):
             return
 
         session = Session()
-
         product = session.query(Product).get(product_id)
 
-        if product:
-            session.delete(product)
-            session.commit()
+        if not product:
+            return
+
+        # podmínka: nesmí jít smazat pokud je skladem
+        if product.stock > 0:
+            QMessageBox.warning(
+                self,
+                "Nelze smazat produkt",
+                "Produkt nelze smazat, protože je stále na skladě."
+            )
+            return
+
+        session.delete(product)
+        session.commit()
 
         self.load_products()
