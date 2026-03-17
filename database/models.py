@@ -52,16 +52,30 @@ class Product(Base):
 
         return round((self.margin_kc / self.purchase_price) * 100,2)
 
+
 class Invoice(Base):
     __tablename__ = "invoices"
+
     id = Column(Integer, primary_key=True)
     number = Column(String)
-    items = relationship("InvoiceItem", cascade="all, delete")
+    customer_id = Column(Integer, ForeignKey("customers.id"))
+    total = Column(Float)
+    vat = Column(Float)
+    total_with_vat = Column(Float)
+
+    customer = relationship("Customer")
+    items = relationship("InvoiceItem", back_populates="invoice")
+
 
 class InvoiceItem(Base):
     __tablename__ = "invoice_items"
+
     id = Column(Integer, primary_key=True)
     invoice_id = Column(Integer, ForeignKey("invoices.id"))
-    name = Column(String)
+
+    product_name = Column(String)
     quantity = Column(Integer)
     price = Column(Float)
+    vat = Column(Float)
+
+    invoice = relationship("Invoice", back_populates="items")

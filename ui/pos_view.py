@@ -3,7 +3,7 @@ from PySide6.QtWidgets import QWidget,QVBoxLayout,QLineEdit,QTableWidget,QTableW
 from database.db import Session
 from database.models import Product
 from services.stock_service import decrease_stock
-from services.invoice_service import create_invoice_pdf
+from services.invoice_service import create_invoice
 
 class POSView(QWidget):
 

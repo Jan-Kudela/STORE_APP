@@ -4,6 +4,7 @@ from PySide6.QtGui import QAction
 from ui.products_view import ProductsView
 from ui.customers_view import CustomersView
 from ui.pos_view import POSView
+from ui.invoice_view import InvoiceView
 
 class MainWindow(QMainWindow):
 
@@ -16,10 +17,12 @@ class MainWindow(QMainWindow):
         self.products = ProductsView()
         self.customers = CustomersView()
         self.pos = POSView()
-
+        self.invoice_view = InvoiceView()
+        
         self.stack.addWidget(self.products)
         self.stack.addWidget(self.customers)
         self.stack.addWidget(self.pos)
+        self.stack.addWidget(self.invoice_view)
 
         self.setCentralWidget(self.stack)
         self.create_toolbar()
@@ -32,6 +35,7 @@ class MainWindow(QMainWindow):
         btn_products = QAction("Produkty",self)
         btn_customers = QAction("Zákazníci",self)
         btn_pos = QAction("Kasa",self)
+        btn_invoice_view = QAction("Fakturace",self)
 
         btn_products.triggered.connect(
             lambda:self.stack.setCurrentWidget(self.products)
@@ -45,6 +49,11 @@ class MainWindow(QMainWindow):
             lambda:self.stack.setCurrentWidget(self.pos)
         )
 
+        btn_invoice_view.triggered.connect(
+            lambda:self.stack.setCurrentWidget(self.invoice_view)
+        )
+
         toolbar.addAction(btn_products)
         toolbar.addAction(btn_customers)
         toolbar.addAction(btn_pos)
+        toolbar.addAction(btn_invoice_view)
