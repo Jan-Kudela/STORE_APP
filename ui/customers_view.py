@@ -1,6 +1,8 @@
 
+import requests
 from PySide6.QtWidgets import (QWidget,QVBoxLayout,QPushButton,QTableWidget,
-QTableWidgetItem,QLineEdit,QHBoxLayout,QAbstractItemView)
+QTableWidgetItem,QLineEdit,QHBoxLayout,QAbstractItemView,
+QHeaderView,QMessageBox)
 from database.db import Session
 from database.models import Customer
 
@@ -31,6 +33,8 @@ class CustomersView(QWidget):
 
         self.btn_new = QPushButton("Nový zákazník")
         self.btn_save = QPushButton("Uložit")
+        self.btn_ares = QPushButton("Načíst z ARES")
+        self.btn_ares.clicked.connect(self.load_from_ares)
         self.btn_edit = QPushButton("Upravit")
         self.btn_delete = QPushButton("Smazat")
 
@@ -51,11 +55,13 @@ class CustomersView(QWidget):
         self.table.setHorizontalHeaderLabels([
             "ID","Jméno","IČO","DIČ","Adresa","Telefon","E-mail"
         ])
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
         button_layout = QHBoxLayout()
 
         button_layout.addWidget(self.btn_new)
         button_layout.addWidget(self.btn_save)
+        button_layout.addWidget(self.btn_ares)
         button_layout.addWidget(self.btn_edit)
         button_layout.addWidget(self.btn_delete)
 
@@ -178,7 +184,18 @@ class CustomersView(QWidget):
 
         session.commit()
         self.load_customers()
+        
+        self.name.clear()
+        self.ico.clear()
+        self.dic.clear()
+        self.email.clear()
+        self.phone.clear()
+        self.address.clear()
 
+        if hasattr(self,"editing_customer_id"):
+            del self.editing_customer_id
+
+        self.name.setFocus()
     
     def delete_customer(self):
 
@@ -196,5 +213,46 @@ class CustomersView(QWidget):
         session.commit()
 
         self.load_customers()
+
+
+    def load_from_ares(self):
+        ico = self.ico.text().strip()
+
+        if not ico:
+            QMessageBox.warning(self, "Chyba", "Zadejte IČO")
+            return
+
+        url = f"https://ares.gov.cz/ekonomicke-subjekty-v-be/rest/ekonomicke-subjekty/{ico}"
+
+        try:
+            resp = requests.get(url, timeout=10)
+            print(resp.text)
+            if resp.status_code != 200:
+                QMessageBox.warning(self, "Chyba", f"ARES chyba: {resp.status_code}")
+                return
+
+            data = resp.json()
+
+        except Exception as e:
+            QMessageBox.warning(self, "Chyba", f"Chyba připojení:\n{e}")
+            return
+
+        #  DATA
+        try:
+            self.name.setText(data.get("obchodniJmeno", ""))
+            self.dic.setText(data.get("dic", ""))
+
+            sidlo = data.get("sidlo", {})
+
+            ulice = sidlo.get("nazevUlice", "")
+            cislo = sidlo.get("cisloDomovni", "")
+            mesto = sidlo.get("nazevObce", "")
+            psc = sidlo.get("psc", "")
+
+            adresa = f"{ulice} {cislo}, {mesto}, {psc}".strip()
+            self.address.setText(adresa)
+
+        except Exception as e:
+            QMessageBox.warning(self, "Chyba", f"Chyba při zpracování:\n{e}")
 
     
