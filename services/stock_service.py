@@ -11,3 +11,4 @@ def decrease_stock(product_id, qty):
     if product.stock < 0:
         product.stock = 0
     session.commit()
+    session.close()

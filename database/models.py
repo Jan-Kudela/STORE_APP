@@ -16,19 +16,19 @@ class Customer(Base):
 class Product(Base):
 
     __tablename__ = "products"
-
     id = Column(Integer, primary_key=True)
-
-    name = Column(String)
-
+    name = Column(String, nullable=False, unique=True)
+    manufacturer = Column(String)      
+    supplier = Column(String)
     purchase_price = Column(Float)   # nákup bez DPH
     sale_price = Column(Float)       # prodej bez DPH
-
-    vat = Column(Float)              # např 21
-
+    vat = Column(Integer)              # např 21
     stock = Column(Integer)
-
     ean = Column(String)
+
+
+
+
 
     # ----- výpočty -----
 

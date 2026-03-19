@@ -134,7 +134,20 @@ class InvoiceView(QWidget):
     
     def open_invoice(self, row, column):
 
-        invoice_id = self.invoice_table.item(row,3).text()
+        invoice_id = self.invoice_table.item(row, 3).text()
+        pdf_path = f"invoice_{invoice_id}.pdf"
 
-        import os
-        os.startfile(f"invoice_{invoice_id}.pdf")
+        import os, sys, subprocess
+
+        if not os.path.exists(pdf_path):
+            from PySide6.QtWidgets import QMessageBox
+            QMessageBox.warning(self, "Soubor nenalezen", f"PDF faktura '{pdf_path}' neexistuje.")
+            return
+
+        # cross-platform otevření PDF (oprava: os.startfile funguje jen na Windows)
+        if sys.platform == "win32":
+            os.startfile(pdf_path)
+        elif sys.platform == "darwin":
+            subprocess.Popen(["open", pdf_path])
+        else:
+            subprocess.Popen(["xdg-open", pdf_path])
