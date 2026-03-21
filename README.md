@@ -1,2 +1,3 @@
-<h1>Skladový, pokladní a fakturační systém</h1>
-<h2>Rozpracováno (in process)</h2>
+<h1>Popis projektu</h1>
+<h2>Skladový, pokladní a fakturační systém</h2>
+<p>rozpracováno (in process)</p>
