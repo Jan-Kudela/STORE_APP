@@ -18,6 +18,7 @@ class Product(Base):
     __tablename__ = "products"
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False, unique=True)
+    description = Column(String)
     manufacturer = Column(String)      
     supplier = Column(String)
     purchase_price = Column(Float)   # nákup bez DPH
@@ -25,10 +26,10 @@ class Product(Base):
     vat = Column(Integer)              # např 21
     stock = Column(Integer)
     ean = Column(String)
-
-
-
-
+    parameters = relationship(
+        "ProductParameter", back_populates="product",
+          cascade="all, delete-orphan"
+    )
 
     # ----- výpočty -----
 
@@ -79,3 +80,24 @@ class InvoiceItem(Base):
     vat = Column(Float)
 
     invoice = relationship("Invoice", back_populates="items")
+
+
+class Parameter(Base):
+    __tablename__ = "parameters"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False, unique=True)
+
+    values = relationship("ProductParameter", back_populates="parameter", cascade="all, delete-orphan")
+
+
+class ProductParameter(Base):
+    __tablename__ = "product_parameters"
+
+    id = Column(Integer, primary_key=True)
+    product_id = Column(Integer, ForeignKey("products.id", ondelete="CASCADE"))
+    parameter_id = Column(Integer, ForeignKey("parameters.id", ondelete="CASCADE"))
+    value = Column(String)
+
+    product = relationship("Product", back_populates="parameters")
+    parameter = relationship("Parameter", back_populates="values")

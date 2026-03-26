@@ -55,7 +55,9 @@ class CustomersView(QWidget):
         self.table.setHorizontalHeaderLabels([
             "ID","Jméno","IČO","DIČ","Adresa","Telefon","E-mail"
         ])
-        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        header = self.table.horizontalHeader()
+        for col in range(0, 7):
+            header.setSectionResizeMode(col, QHeaderView.ResizeToContents)
 
         button_layout = QHBoxLayout()
 
@@ -67,6 +69,7 @@ class CustomersView(QWidget):
 
         button_layout.addStretch()
 
+        layout.addWidget(self.filter_input)
         layout.addLayout(button_layout)
         layout.addWidget(self.name)
         layout.addWidget(self.ico)
@@ -74,7 +77,6 @@ class CustomersView(QWidget):
         layout.addWidget(self.address)
         layout.addWidget(self.phone)
         layout.addWidget(self.email)
-        layout.addWidget(self.filter_input)
         layout.addWidget(self.table)
 
 
@@ -114,9 +116,11 @@ class CustomersView(QWidget):
             self.table.setItem(r,1,QTableWidgetItem(c.name or ""))
             self.table.setItem(r,2,QTableWidgetItem(c.ico or ""))
             self.table.setItem(r,3,QTableWidgetItem(c.dic or ""))
-            self.table.setItem(r,4,QTableWidgetItem(c.email or ""))
+            self.table.setItem(r,4,QTableWidgetItem(c.address or ""))
             self.table.setItem(r,5,QTableWidgetItem(c.phone or ""))
-            self.table.setItem(r,6,QTableWidgetItem(c.address or ""))
+            self.table.setItem(r,6,QTableWidgetItem(c.email or ""))
+
+        session.close()
 
     def new_customer(self):
 
@@ -145,9 +149,9 @@ class CustomersView(QWidget):
         self.name.setText(customer.name)
         self.ico.setText(customer.ico)
         self.dic.setText(customer.dic)
-        self.email.setText(customer.email)
+        self.email.setText(customer.address)
         self.phone.setText(customer.phone)
-        self.address.setText(customer.address)
+        self.address.setText(customer.email)
 
         self.editing_customer_id = customer_id
 
